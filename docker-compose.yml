@@ -1,0 +1,44 @@
+version: '3'
+services:
+  shb-laravel-nginx:
+    container_name: "shb-laravel-nginx"
+    build:
+      context: ./docker/nginx
+    depends_on:
+      - shb-laravel-app
+    ports:
+      - 80:80
+    volumes:
+      - ./:/src
+
+  shb-laravel-app:
+    container_name: "shb-laravel-app"
+    build:
+      context: ./docker/php
+    depends_on:
+      - shb-laravel-mysql
+    ports:
+    - 5173:5173
+    volumes:
+      - ./:/src
+      - /src/node_modules
+      - /src/vendor
+      - ./docker/php/php.ini:/usr/local/etc/php/php.ini
+
+  shb-laravel-mysql:
+    image: mysql:8.0.28
+    command: --max_allowed_packet=32505856
+    container_name: "shb-laravel-mysql"
+    volumes:
+      - ./docker/mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=shb-laravel
+    ports:
+      - 3306:3306
+
+  shb-laravel-redis:
+    image: redis:alpine
+    container_name: "shb-laravel-redis"
+    ports:
+      - 16379:6379
